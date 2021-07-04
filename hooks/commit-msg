@@ -1,0 +1,50 @@
+#!/bin/sh
+# SmartCity - Jira Id Pre-Commit-Hook
+#Author: Muthu Mariyappan G
+
+#Description
+# This script is created to auto add Jira Id to commit messages. 
+# This automation is meant for branch names which is compliant to our policy 
+# Example for compliant branch names : feature/SMCTY-1123, bugfix/SMCTY-1123-Test-Branch etc
+# Example for non-compliant branch names : feature/SMCTY-1123, bugfix/SMCTY-1123-Test-Branch etc
+
+
+#Globals
+
+#When non compliant branch name is being used,
+#Set this flag to 1 to prevent the commit[Recommended], 0 to allow commit 
+Fail_Commit_On_No_Id=0
+
+Branch_Name=`git branch --show-current`
+
+Jira_Pattern='[[:upper:]]+-[[:digit:]]+'
+
+#Script Execution
+
+if [ $(echo $Branch_Name | cut -s -d '/' -f 1) ]; then
+    Jira_Id=$(echo $Branch_Name | cut -d '/' -f 2 | cut -d '-' -f '1,2')
+else
+    Jira_Id=$(echo $Branch_Name | cut -d '-' -f 2,3)
+fi
+
+Jira_Id_Check='^'$Jira_Pattern'$'
+[[ $Jira_Id =~ $Jira_Id_Check ]]
+
+Commit_Message=$(cat $1)
+if [ ${BASH_REMATCH[0]} ]; then
+	if [[ $Commit_Message =~ $Jira_Pattern ]]; then
+		echo "Nice! You've already added JiraId"
+	else
+		sed -i.bak -E "1s/^/${Jira_Id} : /" $1
+		echo "JiraId" $Jira_Id "prefixed to the commit-message!"
+	fi
+else
+	if [[ $Commit_Message =~ $Jira_Pattern ]]; then
+		echo "Warning: JiraId used in Non-Compliant branch name!"
+	else
+		echo 'Warning: Non-Compliant Branch Name! Auto Jira Id prefixing Failed!'
+	fi
+	exit $Fail_Commit_On_No_Id
+fi
+
+#Script Execution ends

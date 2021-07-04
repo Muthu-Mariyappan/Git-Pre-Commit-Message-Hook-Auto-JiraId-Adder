@@ -1,0 +1,1 @@
+"# Git-Pre-Commit-Message-Hook-Auto-JiraId-Adder"  initgit add README.mdgit commit -m "first commit"git branch -M maingit remote add origin https://github.com/Muthu-Mariyappan/Git-Pre-Commit-Message-Hook-Auto-JiraId-Adder.gitgit push -u origin main
